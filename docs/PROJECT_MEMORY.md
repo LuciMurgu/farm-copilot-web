@@ -429,6 +429,37 @@ Update this file at the end of every meaningful session.
 ## Next likely work
 
 1. **Prompt 33** — e-Transport ANAF API integration + upload flow
-2. **Prompt 34** — Next.js SPA frontend consuming /api/v1
+2. **Prompt 34 / frontend Prompt 03** — App Shell Layout (sidebar, mobile nav, right rail)
 
+---
+
+## Frontend SPA (farm-copilot-web)
+
+### PR-01: Project Scaffold
+
+| Item | Status |
+|------|--------|
+| Next.js 14 App Router + TypeScript | Initialized manually (create-next-app blocked by existing files) |
+| pnpm 9.15.4 | Via ~/.local (no sudo available) |
+| Tailwind CSS + design tokens | Brand teal #0f766e + status/severity colors from DOMAIN_GLOSSARY |
+| IBM Plex Sans + IBM Plex Mono | next/font/google, CSS variables |
+| shadcn/ui (New York, Slate) | 20 components in src/components/ui/ |
+| Feature gate registry | lib/mock/feature-gates.ts — 16 features REAL/MOCK per MOCK_STRATEGY |
+| Directory structure | app/(auth)/*, components/*, hooks/*, lib/*, types/* |
+| .env.local.example | NEXT_PUBLIC_API_URL=http://localhost:8000 |
+| pnpm type-check / lint | ✅ 0 errors, 0 warnings |
+| Dev server | Running on :3000, design tokens verified via browser |
+
+### PR-02: API Client + Auth Flow
+
+| Item | Status |
+|------|--------|
+| types/auth.ts | Zod schemas: LoginRequest, User, LoginResponse (cookie-auth, no JWT) |
+| lib/api/client.ts | Axios, withCredentials=true per DEC-0017, ApiError/NetworkError |
+| lib/api/services/auth.ts | login / logout / getMe |
+| hooks/use-auth.ts | Zustand store: user, login, logout, checkAuth, isInitialized |
+| app/login/page.tsx | RHF + Zod, Romanian labels, inline errors, loading spinner |
+| app/(auth)/layout.tsx | Auth guard + QueryClientProvider wrapper |
+| pnpm type-check / lint | ✅ 0 errors, 0 warnings |
+| Login page | Verified in browser — form renders, validation messages in Romanian |
 
