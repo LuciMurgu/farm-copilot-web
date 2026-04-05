@@ -4,16 +4,16 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuthStore } from "@/hooks/use-auth";
+import { AppShell } from "@/components/layout/app-shell";
 
 /**
  * Protected layout — wraps all (auth) routes.
- * Responsibilities:
- * 1. Check auth on mount via checkAuth() → GET /api/v1/auth/me
- * 2. Redirect to /login if unauthenticated
- * 3. Show loading skeleton while the auth check is in-flight
- * 4. Provide QueryClient to all child pages
+ * 1. Checks auth on mount via GET /api/v1/auth/me
+ * 2. Redirects to /login if unauthenticated
+ * 3. Shows loading skeleton while auth check is in flight
+ * 4. Provides QueryClient + AppShell to all child pages
  *
- * Auth strategy: cookie-based session (DEC-0017). No token storage.
+ * Auth: cookie-based session, DEC-0017. No token storage.
  */
 
 const queryClient = new QueryClient({
@@ -41,19 +41,18 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     }
   }, [isInitialized, user, router]);
 
-  // Show nothing (blank) while checking, then show spinner
   if (!isInitialized || isLoading) {
     return <AuthCheckSkeleton />;
   }
 
-  // Still authenticated but user resolved successfully
   if (!user) {
-    // This state is transient — the effect above will redirect.
     return <AuthCheckSkeleton />;
   }
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <AppShell>{children}</AppShell>
+    </QueryClientProvider>
   );
 }
 
@@ -61,7 +60,6 @@ function AuthCheckSkeleton() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="flex flex-col items-center gap-4">
-        {/* Branded spinner */}
         <div className="relative">
           <div className="w-12 h-12 rounded-full border-4 border-slate-200" />
           <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-brand-700 border-t-transparent animate-spin" />

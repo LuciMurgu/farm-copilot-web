@@ -11,7 +11,7 @@ Update this file at the end of every meaningful session.
 
 ## Last updated
 
-2026-04-04 (E2E verification — 31/32 checks passed)
+2026-04-05 (PR-03 App Shell Layout verified)
 
 ---
 
@@ -428,8 +428,9 @@ Update this file at the end of every meaningful session.
 
 ## Next likely work
 
-1. **Prompt 33** — e-Transport ANAF API integration + upload flow
-2. **Prompt 34 / frontend Prompt 03** — App Shell Layout (sidebar, mobile nav, right rail)
+1. **Frontend PR-04** — Dashboard page (stats row, action feed, ANAF status card)
+2. **Frontend PR-05** — Invoice list page (status tabs, table, alert badges, pagination)
+3. **Prompt 33** — e-Transport ANAF API integration + upload flow
 
 ---
 
@@ -462,4 +463,23 @@ Update this file at the end of every meaningful session.
 | app/(auth)/layout.tsx | Auth guard + QueryClientProvider wrapper |
 | pnpm type-check / lint | ✅ 0 errors, 0 warnings |
 | Login page | Verified in browser — form renders, validation messages in Romanian |
+
+### PR-03: App Shell Layout
+
+| Item | Status |
+|------|--------|
+| `components/layout/app-shell.tsx` | Desktop: sidebar (220/64px) + main + right rail (320px). Mobile: header + main + bottom nav |
+| `components/layout/sidebar.tsx` | Pillar-grouped nav (PI/PII/PIII), ANAF status indicator, collapse toggle, localStorage persistence |
+| `components/layout/mobile-nav.tsx` | 4-item bottom bar + "Mai mult" sheet + hamburger header with full nav sheet |
+| `components/layout/right-rail.tsx` | 4-tab slide-in panel (Alerte/AI/Dovezi/Istoric), mobile backdrop, 200ms ease animation |
+| `components/layout/page-header.tsx` | Breadcrumbs + title + statusPill + actions |
+| `hooks/use-sidebar-store.ts` | Zustand + persist (localStorage `fc-sidebar`) |
+| `hooks/use-right-rail-store.ts` | Zustand: open/close/setTab/setSelectedItemId |
+| `hooks/use-anaf-status.ts` | React Query: GET /api/v1/anaf/status/{farmId}, 5min stale, no retry |
+| `lib/nav.ts` | NavItem/NavGroup types, 9 items in 4 groups, MOBILE_BOTTOM_NAV subset |
+| `types/anaf.ts` | Zod schema: connected, last_sync, cif, token_valid, sync_enabled |
+| `lib/api/services/anaf.ts` | Thin Axios wrapper, Zod parse, null-safe |
+| Placeholder pages | 9 route pages under `(auth)/` — dashboard (with PageHeader demo), alerts, invoices, stock, parcels, arenda, cooperative, saga-export, settings |
+| pnpm type-check / lint | ✅ 0 errors, 0 warnings |
+| Browser verification | Home page, login page, auth guard redirect all verified ✅ |
 

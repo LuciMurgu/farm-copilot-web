@@ -22,6 +22,7 @@ export type LoginRequest = z.infer<typeof LoginRequestSchema>;
  */
 export const UserSchema = z.object({
   id: z.string().uuid(),
+  farm_id: z.string().uuid(),
   email: z.string().email(),
   farm_name: z.string(),
   farm_area_ha: z.number().nullable(),
