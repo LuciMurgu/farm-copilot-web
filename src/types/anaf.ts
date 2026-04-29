@@ -10,6 +10,7 @@ export const AnafStatusSchema = z.object({
   last_sync: z.string().nullable(), // ISO timestamp or null
   cif: z.string().nullable(),
   token_valid: z.boolean(),
+  refresh_days_remaining: z.number().nullable().optional(),
   sync_enabled: z.boolean(),
   sync_interval_hours: z.number(),
 });

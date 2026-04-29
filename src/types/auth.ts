@@ -22,12 +22,14 @@ export type LoginRequest = z.infer<typeof LoginRequestSchema>;
  */
 export const UserSchema = z.object({
   id: z.string().uuid(),
-  farm_id: z.string().uuid(),
   email: z.string().email(),
+  name: z.string(),
+  farm_id: z.string().uuid(),
   farm_name: z.string(),
-  farm_area_ha: z.number().nullable(),
-  farm_location: z.string().nullable(),
-  role: z.enum(["owner", "member", "viewer"]),
+  // Optional fields — may not be present in all responses
+  farm_area_ha: z.number().nullable().optional(),
+  farm_location: z.string().nullable().optional(),
+  role: z.enum(["owner", "member", "viewer"]).optional(),
 });
 
 export type User = z.infer<typeof UserSchema>;

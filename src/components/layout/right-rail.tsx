@@ -2,22 +2,18 @@
 
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRightRailStore, type RightRailTab } from "@/hooks/use-right-rail-store";
-
-const TABS: { id: RightRailTab; label: string }[] = [
-  { id: "alerte", label: "Alerte" },
-  { id: "ai", label: "AI" },
-  { id: "dovezi", label: "Dovezi" },
-  { id: "istoric", label: "Istoric" },
-];
+import { useRightRailStore } from "@/hooks/use-right-rail-store";
+import { usePathname } from "next/navigation";
+import { InvoiceRightRail } from "@/components/invoices/invoice-right-rail";
 
 /**
  * Right rail — slide-in from the right, 320px wide.
  * 200ms ease animation. Overlays content (does not push it).
- * Tabs: Alerte | AI | Dovezi | Istoric.
+ * Content is route-aware: renders InvoiceRightRail on /invoices.
  */
 export function RightRail() {
-  const { isOpen, activeTab, selectedItemId, close, setTab } = useRightRailStore();
+  const { isOpen, selectedItemId, close } = useRightRailStore();
+  const pathname = usePathname();
 
   return (
     <>
@@ -41,15 +37,11 @@ export function RightRail() {
           isOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
-        {/* Header */}
-        <div className="flex items-center h-14 px-4 border-b border-slate-100 flex-shrink-0">
+        {/* Header with close button */}
+        <div className="flex items-center h-10 px-4 border-b border-slate-100 flex-shrink-0">
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-slate-500 truncate">
-              {selectedItemId ? (
-                <span className="font-mono">{selectedItemId}</span>
-              ) : (
-                "Detalii"
-              )}
+            <p className="text-[11px] text-slate-400 truncate">
+              {selectedItemId ? "Detalii factură" : "Detalii"}
             </p>
           </div>
           <button
@@ -61,78 +53,39 @@ export function RightRail() {
           </button>
         </div>
 
-        {/* Tabs */}
-        <div
-          role="tablist"
-          aria-label="Secțiuni panou detalii"
-          className="flex border-b border-slate-100 px-4 flex-shrink-0"
-        >
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              role="tab"
-              id={`rail-tab-${tab.id}`}
-              aria-selected={activeTab === tab.id}
-              aria-controls={`rail-panel-${tab.id}`}
-              onClick={() => setTab(tab.id)}
-              className={cn(
-                "px-3 py-3 text-sm font-medium transition-colors border-b-2 -mb-px mr-1 last:mr-0",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-700",
-                activeTab === tab.id
-                  ? "border-brand-700 text-brand-700"
-                  : "border-transparent text-slate-500 hover:text-slate-700",
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Panel content */}
-        <div
-          role="tabpanel"
-          id={`rail-panel-${activeTab}`}
-          aria-labelledby={`rail-tab-${activeTab}`}
-          className="flex-1 overflow-y-auto p-4"
-        >
-          <RailContent tab={activeTab} itemId={selectedItemId} />
+        {/* Route-aware content */}
+        <div className="flex-1 overflow-hidden">
+          <RailContent pathname={pathname} />
         </div>
       </aside>
     </>
   );
 }
 
-// ── Tab content placeholders (wired in by feature pages) ─────────────────────
+/**
+ * Route-aware content switch.
+ * Renders InvoiceRightRail on /invoices, generic placeholder otherwise.
+ */
+function RailContent({ pathname }: { pathname: string }) {
+  const { selectedItemId } = useRightRailStore();
 
-function RailContent({
-  tab,
-  itemId,
-}: {
-  tab: RightRailTab;
-  itemId: string | null;
-}) {
-  if (!itemId) {
+  if (pathname?.startsWith("/invoices")) {
+    return <InvoiceRightRail />;
+  }
+
+  // Default placeholder
+  if (!selectedItemId) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center gap-2 py-12">
         <p className="text-sm text-slate-400">Selectați un element</p>
-        <p className="text-xs text-slate-300">
-          Detaliile vor apărea aici.
-        </p>
+        <p className="text-xs text-slate-300">Detaliile vor apărea aici.</p>
       </div>
     );
   }
 
-  const labels: Record<RightRailTab, string> = {
-    alerte: "Alerte pentru acest element",
-    ai: "Detalii normalizare AI",
-    dovezi: "Dovezi documentare",
-    istoric: "Istoric corecții / export",
-  };
-
   return (
-    <div className="text-sm text-slate-500">
-      <p className="font-medium text-slate-700 mb-2">{labels[tab]}</p>
-      <p className="text-xs text-slate-400 font-mono">{itemId}</p>
+    <div className="p-4 text-sm text-slate-500">
+      <p className="font-mono text-xs text-slate-400">{selectedItemId}</p>
       <div className="mt-4 space-y-2">
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-12 rounded-lg bg-slate-50 animate-pulse" />

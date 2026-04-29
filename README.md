@@ -1,52 +1,49 @@
-# Farm Copilot
+# Farm Copilot (Web)
 
-Procurement and margin intelligence for Romanian crop farms.
-Automatic invoice ingestion from ANAF SPV with price alerts,
-duplicate detection, and stock tracking.
+Farm Copilot is a procurement and margin intelligence assistant for Romanian crop farms. This repository contains the Next.js frontend, featuring the "Quiet Authority" design system and strict alignment with the FastAPI backend.
 
-## Quick Start (Development)
+## Stack
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS + Shadcn UI
+- **State/Data**: React Query + Axios
+- **Validation**: Zod (strictly matching backend Pydantic models)
 
+## Setup
+
+### 1. Prerequisites
+- Node.js 20+
+- `pnpm` package manager
+
+### 2. Install dependencies
 ```bash
-uv sync
-cp .env.example .env
-# edit .env with your DATABASE_URL
-uv run alembic upgrade head
-uv run python -m farm_copilot.api
+pnpm install
 ```
 
-## Production Deployment
+### 3. Environment Variables
+Create a `.env.local` file in the root directory. The only required variable is the API URL:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+*(Note: Do not append `/api/v1` to the URL. The Axios client handles the base paths.)*
 
+### 4. Run the development server
 ```bash
-# 1. Configure environment
-cp .env.production.example .env.production
+pnpm dev
+```
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-# 2. Generate encryption key
-python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-# Paste into .env.production as ANAF_ENCRYPTION_KEY
+## Building for Production
 
-# 3. Set a strong DB password in .env.production
-
-# 4. Configure ANAF OAuth credentials in .env.production
-
-# 5. Deploy
-docker compose --env-file .env.production up -d
-
-# 6. Verify
-curl http://localhost:8000/health
+To create an optimized production build:
+```bash
+pnpm build
 ```
 
-## Architecture
+## Deployment
 
-Five-layer Python application:
-- **domain/** — Pure business logic (11 modules, zero side effects)
-- **contracts/** — Pydantic DTOs for API boundaries
-- **database/** — SQLAlchemy 2.0 async (14 tables, 17 query modules)
-- **worker/** — Pipeline orchestration + ANAF sync
-- **api/** — FastAPI routes + Jinja2 templates
+This application is configured for seamless deployment on **Vercel**.
 
-## Testing
-
-```bash
-uv run pytest                           # unit tests (no DB needed)
-DATABASE_URL=... uv run pytest tests/   # all tests including integration
-```
+1. Push your code to GitHub.
+2. Import the project in your Vercel Dashboard.
+3. Vercel will automatically detect Next.js and apply the configurations in `vercel.json`.
+4. Inside Vercel's environment variables settings, add `NEXT_PUBLIC_API_URL` pointing to your live production backend IP or Cloudflare domain.

@@ -43,6 +43,8 @@ export const authService = {
    */
   async getMe(): Promise<User> {
     const response = await apiClient.get<unknown>("/api/v1/auth/me");
-    return UserSchema.parse(response.data);
+    // Backend wraps /me in {"user": {...}} same as /login
+    const parsed = LoginResponseSchema.parse(response.data);
+    return parsed.user;
   },
 };

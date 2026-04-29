@@ -11,7 +11,7 @@ Update this file at the end of every meaningful session.
 
 ## Last updated
 
-2026-04-05 (PR-03 App Shell Layout verified)
+2026-04-05 (PR-11–14 PWA + Polish + E2E + Production)
 
 ---
 
@@ -482,4 +482,158 @@ Update this file at the end of every meaningful session.
 | Placeholder pages | 9 route pages under `(auth)/` — dashboard (with PageHeader demo), alerts, invoices, stock, parcels, arenda, cooperative, saga-export, settings |
 | pnpm type-check / lint | ✅ 0 errors, 0 warnings |
 | Browser verification | Home page, login page, auth guard redirect all verified ✅ |
+
+### PR-04: Mock Data + Shared Components
+
+| Item | Status |
+|------|--------|
+| `docs/BACKEND_API_MODELS.py` | Pydantic v2 reference (28 models) — Zod source of truth |
+| `types/common.ts` | Shared enums: InvoiceStatus, Severity, AlertType, etc. + Pagination |
+| `types/invoices.ts` | InvoiceLineItem, ProductSuggestion, InvoiceDetail, InvoiceListItem, Explanation schemas |
+| `types/alerts.ts` | Alert, AlertListResponse schemas |
+| `types/stock.ts` | StockBalance, StockMovement, StockOverview + extended StockItem |
+| `types/dashboard.ts` | DashboardStats, ActionFeedItem, DashboardResponse schemas |
+| `types/parcels.ts` | Parcel, SensorReading, WeatherForecast, ApiaCompliance schemas |
+| `types/cooperative.ts` | Farmer, Bid, Cluster schemas |
+| `types/arenda.ts` | LeaseContract, LeasePaymentType schemas |
+| `types/e-transport.ts` | ETransportDeclaration, ETransportStatus schemas |
+| `types/saga-export.ts` | SagaExportResponse, SagaExportHistory schemas |
+| `types/carbon.ts` | CarbonParcel schema |
+| `types/apia-vault.ts` | ApiaChecklist, ApiaVault schemas |
+| `lib/mock/data/invoices.ts` | 15 invoices — Bayer, Alcedo, Petrom, Pioneer, BASF, Syngenta, Corteva |
+| `lib/mock/data/stock.ts` | 10 items — diesel, fertilizers, herbicides, fungicides, seeds |
+| `lib/mock/data/alerts.ts` | 8 alerts — overpayment, duplicate, total mismatch |
+| `lib/mock/data/action-feed.ts` | 11 feed items — sync, AI, cooperative, fiscal, weather, alert, correction |
+| `lib/mock/data/parcels.ts` | 6 parcels near Iași — Copou, Bârnova, Tomești, Rediu, Ciurea, Miroslava |
+| `lib/mock/data/sensors.ts` | Aggregated sensor accessor over parcel-embedded readings |
+| `lib/mock/data/cooperative.ts` | 1 cluster, 8 farmers near Iași |
+| `lib/mock/data/bidding.ts` | 3 bids — Ameropa, Cargill, Bunge |
+| `lib/mock/data/arenda.ts` | 6 leases — varied payment types, 2 expiring |
+| `lib/mock/data/e-transport.ts` | 4 e-Transport declarations — UIT codes, NC tariff codes |
+| `lib/mock/data/carbon.ts` | 3 carbon parcels — verified, pending, rejected |
+| `lib/mock/data/apia-vault.ts` | 8-item checklist — 5 completed, 3 pending |
+| `components/shared/ai-label.tsx` | Sparkle badge + Popover: source, confidence (color-coded), reasoning |
+| `components/shared/status-pill.tsx` | Colored pill — 11 status variants, Romanian labels from DOMAIN_GLOSSARY |
+| `components/shared/confidence-badge.tsx` | "97% AI" badge: green ≥90, amber ≥70, red <70 |
+| `components/shared/empty-state.tsx` | Icon + title + description + optional CTA button |
+| `components/shared/loading-table.tsx` | Skeleton shimmer rows matching table layout |
+| `components/shared/currency.tsx` | RON formatting: "47.580,00 RON" + formatRON() utility |
+| `components/shared/relative-time.tsx` | "acum 2h", "ieri", "acum 3 zile" + tooltip with full date |
+| `vitest.config.ts` | Vitest + @/ path alias |
+| `__tests__/mock-data-validation.test.ts` | 29 tests — all mock data validates against Zod schemas ✅ |
+| pnpm type-check / lint / test | ✅ 0 errors, 0 warnings, 29/29 tests pass |
+
+### PR-05: Dashboard Command Center
+
+| Item | Status |
+|------|---------|
+| `app/(auth)/dashboard/page.tsx` | "use client" — greeting, ANAF sync badge, stat grid, action feed, empty state |
+| `components/dashboard/stats-grid.tsx` | 4 stat cards (invoices, value, alerts, cooperative bonus) with left accent borders |
+| `components/dashboard/action-feed-list.tsx` | WhatsApp-style cards: severity color bar, type icons, relative time, action buttons |
+| `components/dashboard/dashboard-skeleton.tsx` | Shimmer loading state matching real layout |
+| `hooks/use-action-feed.ts` | React Query + feature gate, Zod parse, 2-min stale |
+| `hooks/use-dashboard-stats.ts` | Aggregates mock data from invoices/alerts/stock/bidding |
+| Design | "Quiet Authority" — neutral tones, no borders except left accent, comfortable spacing |
+| pnpm type-check / lint / test | ✅ 0 errors, 0 warnings, 29/29 tests pass |
+| Dev server | Dashboard compiles and renders (auth guard redirects to login as expected) ✅ |
+
+### PR-06: Invoice List + Review (Flagship)
+
+| Item | Status |
+|------|---------|
+| `app/(auth)/invoices/page.tsx` | "use client" — PageHeader + ANAF badge, filter bar, TanStack Table, empty state, skeleton |
+| `components/invoices/invoice-table.tsx` | TanStack Table: 9 columns (select, expand, #, Furnizor, Linii, Total, Data, Status, Alerte), sortable, expandable rows, batch select, mobile card view |
+| `components/invoices/invoice-filters.tsx` | Status dropdown (6 options) + supplier search |
+| `components/invoices/invoice-right-rail.tsx` | 4-tab right rail (Alerte with price comparison, AI normalization, Dovezi provenance, Istoric timeline) |
+| `components/invoices/invoice-table-skeleton.tsx` | Loading skeleton matching table + filter layout |
+| `components/layout/right-rail.tsx` | Updated: route-aware content — renders InvoiceRightRail on /invoices |
+| `hooks/use-invoices.ts` | React Query + feature gate + Zod parse |
+| Design | 44px rows, sticky header, mono font IDs/CUI, right-aligned numbers, left color bars |
+| pnpm type-check / lint / test | ✅ 0 errors, 0 warnings, 29/29 tests pass |
+| Dev server | /invoices compiles (200, 1170 modules) and renders correctly ✅ |
+
+### PR-07: Stock Overview + Alerts
+
+| Item | Status |
+|------|---------|
+| `app/(auth)/stock/page.tsx` | Diesel report + active/exhausted items grid with category icons |
+| `app/(auth)/alerts/page.tsx` | Alerts grouped by severity (Urgent/Atenție/Info) with source badges |
+| `components/stock/stock-card.tsx` | Product card: icon, qty + unit, value RON, consumption rate, days-remaining progress bar (red <5d / amber <14d / green), trend indicator |
+| `components/stock/diesel-report.tsx` | Diesel discrepancy: bought vs estimated vs gap (3-column comparison), invoice deep-link |
+| `components/alerts/alert-card.tsx` | Alert card: severity border + badge, source badge (SPV/APIA/AI/e-Transport/Sistem), price comparison evidence, relative timestamp, action button |
+| `hooks/use-stock.ts` | React Query hook, mock data source |
+| `hooks/use-alerts.ts` | React Query + Zod validation |
+| `components/layout/sidebar.tsx` | Updated: NavLink accepts badge prop, Alerts nav item shows red count badge |
+| pnpm type-check / lint / test | ✅ 0 errors, 0 warnings, 29/29 tests pass |
+| Dev server | /stock (200, 1122 modules), /alerts (200, 1150 modules) ✅ |
+
+### PR-08: Parcels + Virtual Sensors (Mocked)
+
+| Item | Status |
+|------|---------|
+| `app/(auth)/parcels/page.tsx` | SVG map + parcel cards (grid→list on select) + sensor panel |
+| `components/parcels/parcel-map.tsx` | SVG polygons: green/amber/red by status, labels (ID/area/crop/NDVI/moisture), click-to-select, legend |
+| `components/parcels/parcel-card.tsx` | Status dot, NDVI + moisture color-coded, satellite timestamp, APIA photo count + compliance |
+| `components/parcels/sensor-panel.tsx` | VS-Moisture (10/20/40cm), VS-Nutrients (N-P-K), Compaction (Go/No-Go), Weather (3-day), APIA checklist. **AILabel on EVERY sensor value** with PINNs explanation |
+| `hooks/use-parcels.ts` | React Query + Zod validation (MOCK gate) |
+| Badge | "Pillar II — PINNs" amber badge in PageHeader |
+| pnpm type-check / lint / test | ✅ 0 errors, 0 warnings, 29/29 tests pass |
+| Dev server | /parcels (200, 1164 modules) ✅ |
+
+### PR-09: Cooperative + Bidding (Mocked)
+
+| Item | Status |
+|------|---------|
+| `app/(auth)/cooperative/page.tsx` | Cluster summary + 3 bid cards + benefit calculator |
+| `components/cooperative/cluster-summary.tsx` | Purple gradient card: cluster stats (4-grid), farmer badges |
+| `components/cooperative/bid-card.tsx` | Buyer bid: price highlight (green 3xl), advantage vs local, mini revenue calculator, bank-grade AlertDialog confirmation + Sonner success toast |
+| `components/cooperative/benefit-calculator.tsx` | Local vs cooperative revenue comparison + net benefit (green) |
+| `app/layout.tsx` | Updated: import Sonner `<Toaster>` globally |
+| `components/ui/alert-dialog.tsx` | New: shadcn AlertDialog |
+| `components/ui/sonner.tsx` | New: shadcn Sonner toast |
+| Confirmation dialog | "Confirmi vânzarea a {tons}t grâu către {buyer} la {price} RON/t?" + amount + UIT note + loading state |
+| Toast | "Ofertă acceptată. Cod UIT în curs de generare." |
+| pnpm type-check / lint / test | ✅ 0 errors, 0 warnings, 29/29 tests pass |
+| Dev server | /cooperative (200, 1139 modules) ✅ |
+
+### PR-10: SAGA Export + Arendă + Settings
+
+| Item | Status |
+|------|---------|
+| `app/(auth)/saga-export/page.tsx` | Summary card (4 stats), full-width download button + loading, format note, export history table |
+| `app/(auth)/arenda/page.tsx` | Lease contracts sorted expiring-first, grouped by status |
+| `components/arenda/lease-card.tsx` | Owner, area, location, 7-year progress bar (amber if expiring), payment type w/ icon, annual cost |
+| `app/(auth)/settings/page.tsx` | 3 sections: ANAF SPV (real hook), Farm Profile (read-only), Preferences (toggles + export format) |
+| `components/ui/switch.tsx` | New: shadcn Switch component |
+| `app/layout.tsx` | (already had Toaster from PR-09) |
+| SAGA Export API ready | `POST /api/v1/export/saga/bulk` wired (simulated), `GET /api/v1/export/saga/{id}` documented |
+| ANAF status | Uses real `useAnafStatus` hook from PR-03 |
+| pnpm type-check / lint / test | ✅ 0 errors, 0 warnings, 29/29 tests pass |
+| Dev server | /saga-export (200, 1117), /arenda (200, 1111), /settings (200, 1151) ✅ |
+
+### PR-11–14: PWA + Polish + E2E + Production Config
+
+| Item | Status |
+|------|---------|
+| **Prompt 11 — PWA** | |
+| `public/manifest.json` | AgroUnu, theme_color #0F766E, standalone, 192/512 icons |
+| `public/sw.js` | Service worker: cache-first shell, network-first API w/ offline fallback |
+| `components/pwa/install-prompt.tsx` | "Add to Home Screen" banner, registers SW, dismissible |
+| `app/layout.tsx` | manifest link, viewport themeColor, apple-touch-icon, PwaInstallPrompt |
+| **Prompt 12 — Polish** | |
+| `app/global-error.tsx` | Global error boundary (full-page recovery UI) |
+| `app/(auth)/error.tsx` | Auth-scoped error boundary (retry + dashboard link) |
+| `app/not-found.tsx` | Custom 404 page |
+| **Prompt 13 — E2E Tests** | |
+| `playwright.config.ts` | Desktop (1280px) + Mobile (375px) projects, auto dev server |
+| `e2e/core-flow.spec.ts` | 12 tests: login render, auth guards for all 8 routes, meta tags, 404 |
+| `vitest.config.ts` | Excludes e2e/ from unit tests |
+| `package.json` | Added `pnpm e2e` script |
+| **Prompt 14 — Production** | |
+| `vercel.json` | Security headers (X-Frame, nosniff, CSP), SW cache control |
+| `Dockerfile` | Multi-stage: Alpine Node 20, pnpm, standalone, non-root, port 3000 |
+| `next.config.js` | Standalone output, CSP headers with API URL |
+| `.env.example` | NEXT_PUBLIC_API_URL template |
+| `README.md` | Full frontend README: stack, setup, routes, architecture, Docker/Vercel deploy |
+| pnpm type-check / lint / test | ✅ 0 errors, 0 warnings, 29/29 tests pass |
 

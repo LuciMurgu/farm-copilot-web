@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/hooks/use-sidebar-store";
 import { useAuthStore } from "@/hooks/use-auth";
 import { useAnafStatus } from "@/hooks/use-anaf-status";
+import { mockAlerts } from "@/lib/mock/data/alerts";
 import { NAV_GROUPS, type NavItem } from "@/lib/nav";
 
 // ── Pillar badge ──────────────────────────────────────────────────────────────
@@ -43,10 +44,12 @@ function NavLink({
   item,
   isActive,
   collapsed,
+  badge,
 }: {
   item: NavItem;
   isActive: boolean;
   collapsed: boolean;
+  badge?: number;
 }) {
   const Icon = item.icon;
   return (
@@ -55,7 +58,7 @@ function NavLink({
       title={collapsed ? item.label : undefined}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors relative",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
         isActive
           ? "bg-brand-700 text-white"
@@ -68,10 +71,20 @@ function NavLink({
         size={18}
         aria-hidden="true"
       />
+      {/* Badge dot when collapsed */}
+      {collapsed && badge && badge > 0 && (
+        <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />
+      )}
       {!collapsed && (
         <>
           <span className="truncate">{item.label}</span>
-          {item.pillar && <PillarBadge pillar={item.pillar} collapsed={false} />}
+          {badge && badge > 0 ? (
+            <span className="ml-auto text-[10px] font-bold bg-red-500 text-white rounded-full px-1.5 py-0 min-w-[18px] text-center">
+              {badge}
+            </span>
+          ) : (
+            item.pillar && <PillarBadge pillar={item.pillar} collapsed={false} />
+          )}
         </>
       )}
     </Link>
@@ -214,6 +227,7 @@ export function Sidebar() {
                   (item.href !== "/dashboard" && pathname.startsWith(item.href))
                 }
                 collapsed={!isOpen}
+                badge={item.href === "/alerts" ? mockAlerts.list().total : undefined}
               />
             ))}
           </div>
